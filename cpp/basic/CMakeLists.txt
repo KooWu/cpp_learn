@@ -28,4 +28,44 @@ add_executable(
     default_delete.cpp
 )
 
-install(TARGETS nullptr auto uniform_init explicit default_delete RUNTIME DESTINATION bin/cpp/basic)
+add_executable(
+    alias
+    alias.cpp
+)
+
+add_executable(
+    noexcept
+    noexcept.cpp
+)
+
+add_executable(
+    override_final
+    override_final.cpp
+)
+
+add_executable(
+    decltype
+    decltype.cpp
+)
+
+add_executable(
+    lambda
+    lambda.cpp
+)
+
+add_executable(
+    refer
+    refer.cpp
+)
+
+add_executable(
+    move_func
+    move_func.cpp
+)
+
+add_executable(
+    tuple
+    tuple.cpp
+)
+
+install(TARGETS nullptr auto uniform_init explicit default_delete alias noexcept override_final decltype lambda refer move_func tuple RUNTIME DESTINATION bin/cpp/basic)
