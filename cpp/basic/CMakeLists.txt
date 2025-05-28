@@ -68,4 +68,14 @@ add_executable(
     tuple.cpp
 )
 
-install(TARGETS nullptr auto uniform_init explicit default_delete alias noexcept override_final decltype lambda refer move_func tuple RUNTIME DESTINATION bin/cpp/basic)
+add_executable(
+    functional
+    functional.cpp
+)
+
+add_executable(
+    assert
+    assert.cpp
+)
+
+install(TARGETS nullptr auto uniform_init explicit default_delete alias noexcept override_final decltype lambda refer move_func tuple functional assert RUNTIME DESTINATION bin/cpp/basic)
