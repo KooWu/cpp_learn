@@ -37,4 +37,9 @@ add_executable(
     rtti.cpp
 )
 
-install(TARGETS class_size single_inherit multi_inherit diamond_inherit this_pointer abstract_class rtti RUNTIME DESTINATION bin/cpp/class)
+add_executable(
+    friend
+    friend.cpp
+)
+
+install(TARGETS class_size single_inherit multi_inherit diamond_inherit this_pointer abstract_class rtti friend RUNTIME DESTINATION bin/cpp/class)
