@@ -88,4 +88,39 @@ add_executable(
     macro_test.cpp
 )
 
-install(TARGETS nullptr auto uniform_init explicit default_delete alias noexcept override_final decltype lambda refer move_func tuple functional assert using macro_test RUNTIME DESTINATION bin/cpp/basic)
+add_executable(
+    operator
+    operator.cpp
+)
+
+add_executable(
+    exception
+    exception.cpp
+)
+
+add_executable(
+    file_stream
+    file_stream.cpp
+)
+
+add_executable(
+    file_op
+    file_op.cpp
+)
+
+add_executable(
+    time_op
+    time_op.cpp
+)
+
+add_executable(
+    type_cast
+    type_cast.cpp
+)
+
+add_executable(
+    smart_pointer
+    smart_pointer.cpp
+)
+
+install(TARGETS nullptr auto uniform_init explicit default_delete alias noexcept override_final decltype lambda refer move_func tuple functional assert using macro_test operator exception file_stream file_op time_op type_cast smart_pointer RUNTIME DESTINATION bin/cpp/basic)
