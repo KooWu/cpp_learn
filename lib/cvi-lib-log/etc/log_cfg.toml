@@ -1,0 +1,35 @@
+[logFile]
+# 日志文件配置
+fileName = "/tmp/tbox.log"
+fileSize = 102400000
+fileNum = 3
+
+# 第一个应用配置
+[[apps]]
+name = "call_app"
+consoleLevel = "trace"
+fileLevel = "trace"
+enableConsole = true
+enableFile = true
+
+# 第二个应用配置
+[[apps]]
+name = "nw_app"
+consoleLevel = "trace"
+fileLevel = "trace"
+enableConsole = true
+enableFile = true
+
+[[apps]]
+name = "pm_app"
+consoleLevel = "trace"
+fileLevel = "trace"
+enableConsole = true
+enableFile = true
+
+[[apps]]
+name = "test_log_app"
+consoleLevel = "info"
+fileLevel = "trace"
+enableConsole = true
+enableFile = true
