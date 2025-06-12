@@ -30,7 +30,7 @@ function main() {
         rm -rf ${CVI_BUILD_MODULE}/${CVI_BUILD_PLATFORM}_build
     fi
 
-if [[ $CVI_BUILD_MODULE =~ thirdparty/.* ]]; then
+if [[ $CVI_BUILD_MODULE =~ ^thirdparty/ ]]; then
     echo "Detected thirdyparty module ${CVI_BUILD_MODULE}."
     # 执行针对 thirdyparty 的特定编译步骤
     source script/${CVI_BUILD_MODULE}.sh
