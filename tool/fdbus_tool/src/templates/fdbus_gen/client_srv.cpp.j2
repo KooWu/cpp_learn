@@ -1,0 +1,237 @@
+#include "client_{{srv_name|lower}}.h"
+
+{% macro build_client_body() %}
+ipc::fdbus::CBaseWorker {{srv_name}}Client::m_mainWorker("clifdb{{srv_name}}");
+
+{{srv_name}}Client::{{srv_name}}Client(const std::string& name) : CBaseClient((name + "_client").c_str(), &m_mainWorker), m_name(name), m_isConnceted(false) {
+}
+
+{{srv_name}}Client::~{{srv_name}}Client() {
+    disconnect();
+    m_mainWorker.exit();
+}
+
+void {{srv_name}}Client::Start() {
+    FDB_CONTEXT->start();
+    fdbLogAppendLineEnd(true);
+
+    FDB_CONTEXT->registerNsWatchdogListener([](const ipc::fdbus::tNsWatchdogList &dropped_list) {
+        for (auto it = dropped_list.begin(); it != dropped_list.end(); ++it) {
+            std::cout << "Error!!! name: " << it->mClientName << ", pid: " << it->mPid << std::endl;
+        }
+    });
+    /* start worker thread */
+    std::ignore = m_mainWorker.start();
+
+    std::string url(FDB_URL_SVC);
+    url += m_name;
+
+    enableReconnect(true);
+    enableUDP(true);
+    enableTimeStamp(true);
+    std::ignore = connect(url.c_str());
+}
+
+void {{srv_name}}Client::onOnline(const ipc::fdbus::CFdbOnlineInfo& info) {
+    m_isConnceted = true;
+}
+
+void {{srv_name}}Client::onOffline(const ipc::fdbus::CFdbOnlineInfo& info) {
+    m_isConnceted = false;
+}
+
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" %}
+{%  if srv_if.mtd_type == "rr" %}
+{%  if srv_if.param.in.type == "" %}
+int32_t {{srv_name}}Client::{{srv_if.name}}({{srv_if.param.out.type}}& {{srv_if.param.out.name}}, int32_t timeout) {
+    ipc::fdbus::CBaseJob::Ptr ref(new ipc::fdbus::CBaseMessage({{srv_if.msg_id}}));
+
+    int32_t ret = 0;
+    do {
+        bool result = invoke(ref, nullptr, 0, timeout);
+        if (!result) {
+            std::cout << "invoke failed" << std::endl;
+            ret = -1; // invoke failed;
+            break;
+        }
+        // 解析Server返回的内容
+        auto msg = ipc::fdbus::castToMessage<ipc::fdbus::CBaseMessage*>(ref);
+        if (msg->isStatus()) {
+            std::cout << "status error!" << std::endl;
+            ret = -2; // msg status error;
+            break;
+        }
+
+        // 反序列化
+        ipc::fdbus::CFdbProtoMsgParser parser({{srv_if.param.out.name}});
+        result = msg->deserialize(parser);
+        if (!result) {
+            std::cout << "deserialize failed" << std::endl;
+            ret = -3; // deserialize failed;
+            break;
+        }
+    } while (0);
+    return ret;
+}
+int32_t {{srv_name}}Client::{{srv_if.name}}Async({{srv_if.name}}AsyncCallback callback, int32_t timeout) {
+    auto lambdaFunc = [callback](ipc::fdbus::CBaseJob::Ptr& msg_ref, ipc::fdbus::CFdbBaseObject *) {
+        auto msg = ipc::fdbus::castToMessage<ipc::fdbus::CBaseMessage*>(msg_ref);
+        if (msg->isStatus()) {
+            return callback(-2, nullptr);
+        }
+        {{srv_if.param.out.type}} {{srv_if.param.out.name}};
+        ipc::fdbus::CFdbProtoMsgParser parser({{srv_if.param.out.name}});
+        if (!msg->deserialize(parser)) {
+            return callback(-3, nullptr);
+        }
+        return callback(0, &{{srv_if.param.out.name}});
+    };
+    bool result = invoke({{srv_if.msg_id}}, lambdaFunc, nullptr, 0, nullptr, timeout);
+    if (!result) {
+        return -1; // invoke failed; 
+    }
+    return 0;
+}
+{%  else %}
+int32_t {{srv_name}}Client::{{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, {{srv_if.param.out.type}}& {{srv_if.param.out.name}}, int32_t timeout) {
+    ipc::fdbus::CFdbProtoMsgBuilder builder({{srv_if.param.in.name}});
+    ipc::fdbus::CBaseJob::Ptr ref(new ipc::fdbus::CBaseMessage({{srv_if.msg_id}}));
+
+    int32_t ret = 0;
+    do {
+        bool result = invoke(ref, builder, timeout);
+        if (!result) {
+            std::cout << "invoke failed" << std::endl;
+            ret = -1; // invoke failed;
+            break;
+        }
+        // 解析Server返回的内容
+        auto msg = ipc::fdbus::castToMessage<ipc::fdbus::CBaseMessage*>(ref);
+        if (msg->isStatus()) {
+            std::cout << "status error!" << std::endl;
+            ret = -2; // msg status error;
+            break;
+        }
+
+        // 反序列化
+        ipc::fdbus::CFdbProtoMsgParser parser({{srv_if.param.out.name}});
+        result = msg->deserialize(parser);
+        if (!result) {
+            std::cout << "deserialize failed" << std::endl;
+            ret = -3; // deserialize failed;
+            break;
+        }
+    } while (0);
+    return ret;
+}
+int32_t {{srv_name}}Client::{{srv_if.name}}Async(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, {{srv_if.name}}AsyncCallback callback, int32_t timeout) {
+    auto lambdaFunc = [callback](ipc::fdbus::CBaseJob::Ptr& msg_ref, ipc::fdbus::CFdbBaseObject *) {
+        auto msg = ipc::fdbus::castToMessage<ipc::fdbus::CBaseMessage*>(msg_ref);
+        if (msg->isStatus()) {
+            return callback(-2, nullptr);
+        }
+        {{srv_if.param.out.type}} {{srv_if.param.out.name}};
+        ipc::fdbus::CFdbProtoMsgParser parser({{srv_if.param.out.name}});
+        if (!msg->deserialize(parser)) {
+            return callback(-3, nullptr);
+        }
+        return callback(0, &{{srv_if.param.out.name}});
+    };
+    ipc::fdbus::CFdbProtoMsgBuilder builder({{srv_if.param.in.name}});
+    bool result = invoke({{srv_if.msg_id}}, builder, lambdaFunc, nullptr, timeout);
+    if (!result) {
+        return -1; // invoke failed;
+    }
+    return 0;
+}
+{%  endif %}
+{%  else %}
+{%  if srv_if.param.in.type == "" %}
+int32_t {{srv_name}}Client::{{srv_if.name}}(int32_t timeout) {
+    bool result = invoke({{srv_if.msg_id}}, nullptr, 0, timeout);
+    if (!result) {
+        return -1; // invoke failed;
+    }
+    return 0;
+}
+{%  else %}
+int32_t {{srv_name}}Client::{{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, int32_t timeout) {
+    ipc::fdbus::CFdbProtoMsgBuilder builder({{srv_if.param.in.name}});
+    bool result = invoke({{srv_if.msg_id}}, builder, timeout, EFdbQOS::FDB_QOS_LOCAL);
+    if (!result) {
+        return -1; // invoke failed;
+    }
+    return 0;
+}
+{%  endif %}
+{%  endif %}
+{%  elif srv_if.type == "event" %}
+int32_t {{srv_name}}Client::{{srv_if.name}}Subscribe({{srv_if.name}}Callback callback, EFdbQOS qos) {
+    if (callback == nullptr) {
+        return -1;
+    }
+    ipc::fdbus::CFdbMsgSubscribeList subscribeList;
+    int32_t msgId = {{srv_if.msg_id}};
+    subscribeList.addNotifyItem(msgId);
+    bool result = subscribe(subscribeList, 0, qos);
+    if (!result) {
+        std::cout << "subscribe failed" << std::endl;
+        return -1; // subscribe failed;
+    }
+    // 异步回调
+    auto lambdaFunc = [callback](ipc::fdbus::CFdbMessage* msg) {
+        if (msg->isStatus()) {
+            return;
+        }
+        {{srv_if.param.out.type}} {{srv_if.param.out.name}};
+        ipc::fdbus::CFdbProtoMsgParser parser({{srv_if.param.out.name}});
+        if (msg->deserialize(parser)) {
+            return callback({{srv_if.param.out.name}});
+        }
+    };
+    m_eventCallbackMap.emplace(msgId, lambdaFunc);
+    return 0;
+}
+{%  endif %}
+{% endfor %}
+
+void {{srv_name}}Client::onBroadcast(ipc::fdbus::CBaseJob::Ptr &msg_ref) {
+    auto msg = ipc::fdbus::castToMessage<ipc::fdbus::CBaseMessage *>(msg_ref);
+    auto range = m_eventCallbackMap.equal_range(msg->code());
+    for (auto it = range.first; it != range.second; ++it) {
+        it->second(msg);
+    }
+}
+
+void {{srv_name}}Client::onKickDog(ipc::fdbus::CBaseJob::Ptr &msg_ref) {
+    ipc::fdbus::CFdbMessage::kickDog(msg_ref, worker(), [](ipc::fdbus::CBaseJob::Ptr &msg_ref) {
+        ipc::fdbus::CFdbMessage::feedDog(msg_ref);
+    });
+}
+
+void {{srv_name}}Client::onStatus(ipc::fdbus::CBaseJob::Ptr &msg_ref, int32_t error_code, const char *description) {
+    if (ipc::fdbus::FDB_ST_AUTO_REPLY_OK == error_code) {
+        return;
+    }
+
+    auto msg = ipc::fdbus::castToMessage<ipc::fdbus::CBaseMessage *>(msg_ref);
+    if (msg->isSubscribe()) {
+        if (msg->isError()) {
+            std::cout << "subscribe is nok! msgid: " << msg->code() << ", error_code: " << error_code << ", description: " << description << std::endl;
+        } else {
+            std::cout << "subscribe is ok! msgid: " << msg->code() << ", error_code: " << error_code << ", description: " << description << std::endl;
+        }
+    }
+}
+{% endmacro %}
+
+{% for namespace in ns %}
+namespace {{ namespace }} {
+{% endfor %}
+
+{{ build_client_body() }}
+
+{% for namespace in ns %}
+}
+{% endfor %}

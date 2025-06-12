@@ -1,0 +1,70 @@
+#pragma once
+
+#include <fdbus/fdbus.h>
+#include <fdbus/CFdbProtoMsgBuilder.h>
+#include <string>
+#include "{{srv_name|lower}}.pb.h"
+
+{% macro build_server_body() %}
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" and srv_if.mtd_type == "rr" %}
+using {{srv_if.name}}Reply = std::function<void(const {{srv_if.param.out.type}}& {{srv_if.param.out.name}})>;
+{%  endif %}
+{% endfor %}
+
+class {{srv_name}}Server : public ipc::fdbus::CBaseServer {
+public:
+    {{srv_name}}Server(const std::string &name);
+    virtual ~{{srv_name}}Server();
+    void Start();
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" %}
+{%  if srv_if.mtd_type == "rr" %}
+{%  if srv_if.param.in.type == "" %}
+    virtual void {{srv_if.name}}({{srv_if.name}}Reply reply);
+{%  else %}
+    virtual void {{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, {{srv_if.name}}Reply reply);
+{%  endif %}
+{%  else %}
+{%  if srv_if.param.in.type == "" %}
+    virtual void {{srv_if.name}}();
+{%  else %}
+    virtual void {{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}});
+{%  endif %}
+{%  endif %}
+{%  elif srv_if.type == "event" %}
+    void Publish{{srv_if.name}}(const {{srv_if.param.out.type}}& {{srv_if.param.out.name}});
+{%  endif %}
+{% endfor %}
+
+protected:
+    void onOnline(const ipc::fdbus::CFdbOnlineInfo &info) override;
+
+    void onOffline(const ipc::fdbus::CFdbOnlineInfo &info) override;
+
+    void onInvoke(ipc::fdbus::CBaseJob::Ptr &msg_ref) override final;
+
+    void onSubscribe(ipc::fdbus::CBaseJob::Ptr &msg_ref) override;
+
+public:
+    static ipc::fdbus::CBaseWorker m_mainWorker;
+
+private:
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" %}
+    void Handle{{srv_if.name}}(ipc::fdbus::CBaseJob::Ptr &msg_ref, ipc::fdbus::CBaseMessage *msg);
+{%  endif %}
+{% endfor %}
+    std::string m_name;
+};
+{% endmacro %}
+
+{% for namespace in ns %}
+namespace {{ namespace }} {
+{% endfor %}
+
+{{ build_server_body() }}
+
+{% for namespace in ns %}
+}
+{% endfor %}

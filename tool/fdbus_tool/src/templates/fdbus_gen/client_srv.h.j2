@@ -1,0 +1,80 @@
+#pragma once
+
+#include <fdbus/fdbus.h>
+#include <fdbus/CFdbProtoMsgBuilder.h>
+#include <string>
+#include <unordered_map>
+#include <functional>
+#include "{{srv_name|lower}}.pb.h"
+
+{% macro build_client_body() %}
+using OnlineCallback = std::function<void(bool isOnline)>;
+
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" and srv_if.mtd_type == "rr" %}
+using {{srv_if.name}}AsyncCallback = std::function<void(const int32_t, const {{srv_if.param.out.type}}* {{srv_if.param.out.name}})>;
+{%  elif srv_if.type == "event" %}
+using {{srv_if.name}}Callback= std::function<void(const {{srv_if.param.out.type}}& {{srv_if.param.out.name}})>;
+{%  endif %}
+{% endfor %}
+
+class {{srv_name}}Client : public ipc::fdbus::CBaseClient {
+public:
+    explicit {{srv_name}}Client(const std::string& name);
+    virtual ~{{srv_name}}Client();
+
+    bool GetServiceOnlineStatus() const { return m_isConnceted; }
+    void RegisterServiceOnlineStatusCallback(OnlineCallback callback) { m_onlineCallback = callback; }
+    void Start();
+
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" %}
+{%  if srv_if.mtd_type == "rr" %}
+{%  if srv_if.param.in.type == "" %}
+    int32_t {{srv_if.name}}({{srv_if.param.out.type}}& {{srv_if.param.out.name}}, int32_t timeout = 0);
+    int32_t {{srv_if.name}}Async({{srv_if.name}}AsyncCallback callback, int32_t timeout = 0);
+{%  else %}
+    int32_t {{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, {{srv_if.param.out.type}}& {{srv_if.param.out.name}}, int32_t timeout = 0);
+    int32_t {{srv_if.name}}Async(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, {{srv_if.name}}AsyncCallback callback, int32_t timeout = 0);
+{%  endif %}
+{%  else %}
+{%  if srv_if.param.in.type == "" %}
+    int32_t {{srv_if.name}}(int32_t timeout = 0);
+{%  else %}
+    int32_t {{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, int32_t timeout = 0);
+{%  endif %}
+{%  endif %}
+{%  elif srv_if.type == "event" %}
+    int32_t {{srv_if.name}}Subscribe({{srv_if.name}}Callback callback, EFdbQOS qos = EFdbQOS::FDB_QOS_LOCAL);
+{%  endif %}
+{% endfor %}
+protected:
+    void onOnline(const ipc::fdbus::CFdbOnlineInfo& info) override final;
+
+    void onOffline(const ipc::fdbus::CFdbOnlineInfo& info) override final;
+
+    using FdbusCallbackFunc = std::function<void(ipc::fdbus::CFdbMessage*)>;
+    void onBroadcast(ipc::fdbus::CBaseJob::Ptr &msg_ref) override final; //event callback
+
+    void onKickDog(ipc::fdbus::CBaseJob::Ptr &msg_ref) override final; //kick dog callback
+
+    void onStatus(ipc::fdbus::CBaseJob::Ptr &msg_ref, int32_t error_code, const char *description) override final;
+public:
+    static ipc::fdbus::CBaseWorker m_mainWorker;
+private:
+    std::string m_name;
+    std::unordered_multimap<int32_t, FdbusCallbackFunc> m_eventCallbackMap;
+    bool m_isConnceted;
+    OnlineCallback m_onlineCallback;
+};
+{% endmacro %}
+
+{% for namespace in ns %}
+namespace {{ namespace }} {
+{% endfor %}
+
+{{ build_client_body() }}
+
+{% for namespace in ns %}
+}
+{% endfor %}

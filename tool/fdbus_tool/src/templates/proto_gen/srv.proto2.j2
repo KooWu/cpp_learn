@@ -1,0 +1,46 @@
+{% macro build_enum(name, info) %}
+enum {{ name }} {
+{# #}
+{%  for field in info.members %}
+    {{ field.name }} = {{ field.type }};
+{%  endfor %}
+}
+{% endmacro %}
+{# #}
+{% macro build_struct(name, info) %}
+message {{ name }} {
+{# #}
+{%  for field in info.members %}
+{%  if field.is_repeated %}
+    repeated {{ field.type }} {{ field.name }} = {{ field.idx }};
+{%    else %}
+    required {{ field.type }} {{ field.name }} = {{ field.idx }};
+{% endif %}
+{%  endfor %}
+}
+{% endmacro %}
+{# #}
+{% macro build_union(name, info) %}
+message {{ name }} {
+    oneof data_type {
+    {%  for field in info.members %}
+        {{ field.type }} {{ field.name }} = {{ field.idx }};
+    {%  endfor %}
+    }
+}
+{% endmacro %}
+{# #}
+syntax = "proto2";
+
+package {{ ns }};
+
+{% for data_info in infos %}
+{%  if data_info.category == "struct" %}
+{{      build_struct(data_info.name, data_info) }}
+{%  elif data_info.category == "enum" %}
+{{      build_enum(data_info.name, data_info) }}
+{%  elif data_info.category == "union" %}
+{{      build_union(data_info.name, data_info) }}
+{%  endif %}
+{% endfor %}
+{# #}

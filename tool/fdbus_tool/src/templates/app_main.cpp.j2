@@ -1,0 +1,83 @@
+#include <iostream>
+#include <chrono>
+#include <thread>
+#include <chrono>
+{% macro build_include_client_header_file(name) %}
+#include "client_{{ name|lower }}.h"
+{% endmacro %}
+{# #}
+{% macro build_include_server_header_file(name) %}
+#include "server_{{ name|lower }}.h"
+{% endmacro %}
+{# #}
+{# enter #}
+{% for srv in app_info.req_services %}
+{{ build_include_client_header_file(srv.srv_name) }}
+{% endfor %}
+{# #}
+{% for srv in app_info.services %}
+{{ build_include_server_header_file(srv.srv_name) }}
+{% endfor %}
+{# #}
+
+{% for srv in app_info.services %}
+{% for srv_name, srv_info in srvs_info.items() %}
+{% if srv_name == srv.srv_name %}
+class {{srv.srv_name}}ServerImpl : public {{srv_info.ns|ns_colon}}::{{srv.srv_name}}Server {
+public:
+    {{srv.srv_name}}ServerImpl(const std::string& name) : {{srv.srv_name}}Server(name) {}
+    virtual ~{{srv.srv_name}}ServerImpl() {}
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" %}
+{%  if srv_if.mtd_type == "rr" %}
+{%  if srv_if.param.in.type == "" %}
+    virtual void {{srv_if.name}}({{srv_info.ns|ns_colon}}::{{srv_if.name}}Reply reply) {
+        std::cout << "Received rr {{srv_if.name}}" << std::endl;
+    }
+{%  else %}
+    virtual void {{srv_if.name}}(const {{srv_info.ns|ns_colon}}::{{srv_if.param.in.type}}& {{srv_if.param.in.name}}, {{srv_info.ns|ns_colon}}::{{srv_if.name}}Reply reply) {
+        std::cout << "Received rr {{srv_if.name}}" << std::endl;
+    }
+{%  endif %}
+{%  else %}
+{%  if srv_if.param.in.type == "" %}
+    virtual void {{srv_if.name}}() {
+        std::cout << "Received ff {{srv_if.name}}" << std::endl;
+    }
+{%  else %}
+    virtual void {{srv_if.name}}(const {{srv_info.ns|ns_colon}}::{{srv_if.param.in.type}}& {{srv_if.param.in.name}}) {
+        std::cout << "Received ff {{srv_if.name}}" << std::endl;
+
+    }
+{%  endif %}
+{%  endif %}
+{%  endif %}
+{% endfor %}
+};
+{% endif %}
+{% endfor %}
+{% endfor %}
+
+int main(int argc, char **argv) {
+    {% for srv in app_info.services %}
+    {{srv.srv_name}}ServerImpl server{{srv.srv_name}}("{{srv.srv_name|lower}}");
+    server{{srv.srv_name}}.Start();
+    {% endfor %}
+
+    {% for srv in app_info.req_services %}
+    {% for srv_name, srv_info in srvs_info.items() %}
+    {% if srv_name == srv.srv_name %}
+    {{srv_info.ns|ns_colon}}::{{srv.srv_name}}Client client{{srv.srv_name}}("{{srv.srv_name|lower}}");
+    client{{srv.srv_name}}.Start();
+    while (!client{{srv.srv_name}}.GetServiceOnlineStatus()) {
+        std::this_thread::sleep_for(std::chrono::seconds(1));
+    }
+    {% endif %}
+    {% endfor %}
+    {% endfor %}
+
+    while (1) {
+        std::this_thread::sleep_for(std::chrono::milliseconds(1000));
+    }
+    return 0;
+}

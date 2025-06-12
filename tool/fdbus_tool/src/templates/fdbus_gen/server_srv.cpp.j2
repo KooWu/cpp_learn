@@ -1,0 +1,128 @@
+#include "server_{{srv_name|lower}}.h"
+#include <fdbus/fdbus.h>
+#include <fdbus/CFdbProtoMsgBuilder.h>
+
+{% macro build_server_body() %}
+ipc::fdbus::CBaseWorker {{srv_name}}Server::m_mainWorker("srvfdb{{srv_name}}");
+
+{{srv_name}}Server::{{srv_name}}Server(const std::string &name) : CBaseServer((name + "_server").c_str(), &m_mainWorker), m_name(name) {
+
+}
+
+{{srv_name}}Server::~{{srv_name}}Server() {
+    disconnect();
+    m_mainWorker.exit();
+}
+
+void {{srv_name}}Server::Start() {
+    /* start fdbus context thread */
+    std::ignore = FDB_CONTEXT->start();
+    /* start worker thread */
+    std::ignore = m_mainWorker.start();
+
+    std::string url(FDB_URL_SVC);
+    url += m_name;
+    enableWatchdog(true);
+    enableUDP(true);
+    setExportableLevel(FDB_EXPORTABLE_SITE);
+    std::ignore = bind(url.c_str());
+}
+
+void {{srv_name}}Server::onOnline(const ipc::fdbus::CFdbOnlineInfo &info) {
+    std::cout << "connected to the client" << std::endl;
+}
+
+void {{srv_name}}Server::onOffline(const ipc::fdbus::CFdbOnlineInfo &info) {
+    std::cout << "disconnected from client" << std::endl;
+}
+
+void {{srv_name}}Server::onSubscribe(ipc::fdbus::CBaseJob::Ptr &msg_ref) {
+
+}
+/* called when client calls invoke() */
+void {{srv_name}}Server::onInvoke(ipc::fdbus::CBaseJob::Ptr &msg_ref) {
+    auto msg = ipc::fdbus::castToMessage<ipc::fdbus::CBaseMessage *>(msg_ref);
+    switch (msg->code()) {
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" %}
+        case {{srv_if.msg_id}}:
+            Handle{{srv_if.name}}(msg_ref, msg);
+            break;
+{%  endif %}
+{% endfor %}
+        default:
+            break;
+    }
+}
+{% for srv_if in srv_info.interfaces %}
+{%  if srv_if.type == "method" %}
+{%  if srv_if.mtd_type == "rr" %}
+{%  if srv_if.param.in.type == "" %}
+void {{srv_name}}Server::{{srv_if.name}}({{srv_if.name}}Reply reply) {
+
+}
+void {{srv_name}}Server::Handle{{srv_if.name}}(ipc::fdbus::CBaseJob::Ptr &msg_ref, ipc::fdbus::CBaseMessage *msg) {
+    {{srv_if.name}}Reply replyLambdaFunc = [msg, msg_ref](const {{srv_if.param.out.type}} &{{srv_if.param.out.name}}) mutable {
+        ipc::fdbus::CFdbProtoMsgBuilder builder({{srv_if.param.out.name}});
+        std::ignore = msg->reply(msg_ref, builder);
+    };
+    {{srv_if.name}}(replyLambdaFunc);
+}
+{%  else %}
+void {{srv_name}}Server::{{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}, {{srv_if.name}}Reply reply) {
+
+}
+void {{srv_name}}Server::Handle{{srv_if.name}}(ipc::fdbus::CBaseJob::Ptr &msg_ref, ipc::fdbus::CBaseMessage *msg) {
+    {{srv_if.param.in.type}} {{srv_if.param.in.name}};
+    ipc::fdbus::CFdbProtoMsgParser parser({{srv_if.param.in.name}});
+    if (!msg->deserialize(parser)) {
+        return;
+    }
+    {{srv_if.name}}Reply replyLambdaFunc = [msg, msg_ref](const {{srv_if.param.out.type}} &{{srv_if.param.out.name}}) mutable {
+        ipc::fdbus::CFdbProtoMsgBuilder builder({{srv_if.param.out.name}});
+        std::ignore = msg->reply(msg_ref, builder);
+    };
+    {{srv_if.name}}({{srv_if.param.in.name}}, replyLambdaFunc);
+}
+{%  endif %}
+{%  else %}
+{%  if srv_if.param.in.type == "" %}
+void {{srv_name}}Server::{{srv_if.name}}() {
+
+}
+void {{srv_name}}Server::Handle{{srv_if.name}}(ipc::fdbus::CBaseJob::Ptr &msg_ref, ipc::fdbus::CBaseMessage *msg) {
+    {{srv_if.name}}();
+}
+{%  else %}
+void {{srv_name}}Server::{{srv_if.name}}(const {{srv_if.param.in.type}}& {{srv_if.param.in.name}}) {
+
+}
+void {{srv_name}}Server::Handle{{srv_if.name}}(ipc::fdbus::CBaseJob::Ptr &msg_ref, ipc::fdbus::CBaseMessage *msg) {
+    {{srv_if.param.in.type}} {{srv_if.param.in.name}};
+    ipc::fdbus::CFdbProtoMsgParser parser({{srv_if.param.in.name}});
+    if (!msg->deserialize(parser)) {
+        return;
+    }
+    {{srv_if.name}}({{srv_if.param.in.name}});
+}
+{%  endif %}
+{%  endif %}
+{%  elif srv_if.type == "event" %}
+void {{srv_name}}Server::Publish{{srv_if.name}}(const {{srv_if.param.out.type}}& {{srv_if.param.out.name}}) {
+    ipc::fdbus::CFdbProtoMsgBuilder builder({{srv_if.param.out.name}});
+    std::ignore = broadcast({{srv_if.msg_id}}, builder);
+}
+{%  endif %}
+{% endfor %}
+
+{% endmacro %}
+
+{% for namespace in ns %}
+namespace {{ namespace }} {
+{% endfor %}
+
+{{ build_server_body() }}
+
+{% for namespace in ns %}
+}
+{% endfor %}

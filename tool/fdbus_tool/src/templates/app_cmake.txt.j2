@@ -1,0 +1,64 @@
+cmake_minimum_required(VERSION 3.10)
+project({{app_name}})
+
+option(ENABLE_PB3 "Use proto3 syntax" OFF)
+find_package(protobuf REQUIRED)
+add_compile_definitions(CONFIG_PROTOBUF_4_0_X)
+
+# 定义 protoc 执行路径和参数
+set(PROTOC_EXECUTABLE $ENV{HOME}/x86_sysroot/release/bin/protoc)
+set(PROTO_PATH ${CMAKE_SOURCE_DIR}/proto_gen/proto2)
+if(ENABLE_PB3)
+set(PROTO_PATH ${CMAKE_SOURCE_DIR}/proto_gen/proto3)
+endif()
+set(PROTO_OUT ${PROTO_PATH})
+
+# 获取所有 .proto 文件
+file(GLOB PROTO_FILES "${PROTO_PATH}/*.proto")
+
+# 初始化生成的文件列表
+set(GENERATED_PB_FILES "")
+
+# 遍历每个 .proto 文件并添加自定义命令
+foreach(PROTO_FILE IN LISTS PROTO_FILES)
+    get_filename_component(PROTO_NAME ${PROTO_FILE} NAME_WE)
+    set(GENERATED_PB_H ${PROTO_OUT}/${PROTO_NAME}.pb.h)
+    set(GENERATED_PB_CC ${PROTO_OUT}/${PROTO_NAME}.pb.cc)
+
+    add_custom_command(
+        OUTPUT ${GENERATED_PB_H} ${GENERATED_PB_CC}
+        COMMAND ${PROTOC_EXECUTABLE}
+        ARGS --proto_path=${PROTO_PATH} --cpp_out=${PROTO_OUT} ${PROTO_FILE}
+        DEPENDS ${PROTO_FILE}
+        COMMENT "Running protoc to generate C++ code from ${PROTO_FILE}"
+        VERBATIM
+    )
+
+    list(APPEND GENERATED_PB_FILES ${GENERATED_PB_H} ${GENERATED_PB_CC})
+endforeach()
+
+# 添加一个自定义目标来确保 protoc 在构建时被调用
+add_custom_target(ProtobufTarget ALL
+    DEPENDS ${GENERATED_PB_FILES}
+)
+
+# 添加生成的源文件到您的库或可执行文件
+add_executable({{app_name}} 
+    {{app_name}}_main.cpp
+    ${GENERATED_PB_FILES}
+{% for srv in app_info.req_services %}
+    fdbus_gen/client_{{ srv.srv_name|lower }}.cpp
+{% endfor %}
+{% for srv in app_info.services %}
+    fdbus_gen/server_{{ srv.srv_name|lower }}.cpp
+{% endfor %}
+)
+target_include_directories({{app_name}} PRIVATE ${PROTO_OUT})
+target_include_directories({{app_name}} PRIVATE fdbus_gen)
+target_include_directories({{app_name}} PRIVATE $ENV{HOME}/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/usr/include/)
+
+# 确保 my_executable 依赖于 ProtobufTarget
+add_dependencies({{app_name}} ProtobufTarget)
+target_link_libraries({{app_name}} PRIVATE protobuf::libprotobuf)
+target_link_libraries({{app_name}} PRIVATE $ENV{HOME}/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/usr/lib/libfdbus.so)
+install(TARGETS {{app_name}} RUNTIME DESTINATION bin/{{test_name}})
