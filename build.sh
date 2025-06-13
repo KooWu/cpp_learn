@@ -6,6 +6,7 @@ CUR_DIR=$(readlink -e ${BASH_SOURCE})
 CUR_DIR_NAME=$(dirname ${CUR_DIR})
 
 BUILD_BASE_PATH="${CUR_DIR_NAME}/script/build_base.sh"
+export CVI_PRJ_PATH=${CUR_DIR_NAME}
 
 # shellcheck source=/dev/null
 source "${BUILD_BASE_PATH}" ${CUR_DIR_NAME}
@@ -16,6 +17,7 @@ function main() {
 
     setup_environment
 
+    echo "CVI_PRJ_PATH: ${CVI_PRJ_PATH}"
     echo "CVI_BUILD_TYPE: ${CVI_BUILD_TYPE}"
     echo "CVI_BUILD_MODULE: ${CVI_BUILD_MODULE}"
     echo "CVI_BUILD_TARGET: ${CVI_BUILD_TARGET}"
@@ -36,6 +38,7 @@ if [[ $CVI_BUILD_MODULE =~ ^thirdparty/ ]]; then
     source script/${CVI_BUILD_MODULE}.sh
 else
     cmake -S ${CVI_BUILD_MODULE}/ \
+    -DCVI_PRJ_PATH="${CVI_PRJ_PATH}" \
     -DCVI_BUILD_TYPE="${CVI_BUILD_TYPE}" \
     -DCVI_BUILD_PLATFORM="${CVI_BUILD_PLATFORM}" \
     -DCMAKE_BUILD_TYPE="${CVI_CMAKE_BUILD_TYPE}" \

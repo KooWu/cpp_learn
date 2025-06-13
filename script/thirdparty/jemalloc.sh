@@ -3,23 +3,24 @@
 
 echo "$0 file is running"
 
-echo "BUILD_MODULE_DIR: ${BUILD_MODULE_DIR}"
-echo "BUILD_TYPE: ${BUILD_TYPE}"
-echo "BUILD_INSTALL_DIR: ${BUILD_INSTALL_DIR}"
-echo "PLATFORM_TYPE: ${PLATFORM_TYPE}"
-
-cd ${BUILD_MODULE_DIR}
+cd ${CVI_BUILD_MODULE}
 
 # ./autogen.sh
-
-if [ ${PLATFORM_TYPE} = ubuntu ]; then
-./configure --prefix=${BUILD_INSTALL_DIR} --enable-prof
+if [ -f "configure" ]; then
+    echo "configure is exist"
 else
-./configure --host=arm-linux --prefix=${BUILD_INSTALL_DIR} --enable-prof
+./autogen.sh
+fi
+
+if [ ${CVI_BUILD_PLATFORM} = x86 ]; then
+./configure --prefix=${CVI_INSTALL_PREFIX} --enable-prof
+else
+echo "CONFIGURE_FLAGS: $CONFIGURE_FLAGS"
+./configure  CFLAGS="$CFLAGS -S" $CONFIGURE_FLAGS --prefix=${CVI_INSTALL_PREFIX} --enable-prof
 fi
 
 make clean
-make -j ${CORE_NUM}
+make -j 8
 make install
 
-echo "$0 file is exit"
+# echo "$0 file is exit"
