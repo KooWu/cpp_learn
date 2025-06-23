@@ -42,7 +42,7 @@ void CviLogInit(const std::string &appName) noexcept {
     }
 
     g_logger = std::make_shared<spdlog::logger>(cfg.app.name, sinks.begin(), sinks.end());
-    g_logger->set_level(spdlog::level::trace);
+    g_logger->set_level(to_spdlog_level(cfg.logFile.level));
     spdlog::register_logger(g_logger);
 
     // 创建自定义格式化器

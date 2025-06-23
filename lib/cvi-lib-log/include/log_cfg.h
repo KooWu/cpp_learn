@@ -34,6 +34,7 @@ struct LogFileConfig {
     std::string fileName = "/tmp/usb.log";
     int fileSize = (10*1024*1024);
     int fileNum = 3;
+    level_enum level = level_enum::trace;
 };
 
 // 定义整个配置的结构体

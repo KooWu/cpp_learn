@@ -3,6 +3,7 @@
 fileName = "/tmp/tbox.log"
 fileSize = 102400000
 fileNum = 3
+level = "err"
 
 # 第一个应用配置
 [[apps]]
@@ -29,7 +30,7 @@ enableFile = true
 
 [[apps]]
 name = "test_log_app"
-consoleLevel = "info"
+consoleLevel = "warn"
 fileLevel = "trace"
 enableConsole = true
 enableFile = true

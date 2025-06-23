@@ -59,6 +59,7 @@ static void PrintConfig(const LogConfig& cfg) {
     std::cout << "File Name: " << cfg.logFile.fileName << std::endl;
     std::cout << "File Size: " << cfg.logFile.fileSize << " KB" << std::endl;
     std::cout << "File Num: " << cfg.logFile.fileNum << std::endl;
+    std::cout << "Level: " << static_cast<int>(cfg.logFile.level) << std::endl;
 
     std::cout << "\n=== Application Log Config ===" << std::endl;
     std::cout << "Console Level: " 
@@ -93,6 +94,7 @@ LogConfig LoadLogCfg(const std::string &appName) noexcept {
             cfg.logFile.fileName = logFile["fileName"].value_or("/tmp/tbox.log");
             cfg.logFile.fileSize = logFile["fileSize"].value_or(102400);
             cfg.logFile.fileNum = logFile["fileNum"].value_or(3);
+            cfg.logFile.level = string_level_to_level(logFile["level"].value_or("trace"));
             cfg.app.consoleLevel = string_level_to_level(app["consoleLevel"].value_or("info"));
             cfg.app.fileLevel = string_level_to_level(app["fileLevel"].value_or("trace"));
             cfg.app.enableConsole = app["enableConsole"].value_or(false);
