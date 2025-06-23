@@ -6,6 +6,7 @@
 #include "log_service.h"
 #include "log_cfg.h"
 #include "log_cvi_sink.h"
+#include "cached_pid_formatter.h"
 #include <iostream>
 #include <cstdarg> // 添加包含头文件
 #include "MWPLog.h"
@@ -43,7 +44,13 @@ void CviLogInit(const std::string &appName) noexcept {
     g_logger = std::make_shared<spdlog::logger>(cfg.app.name, sinks.begin(), sinks.end());
     g_logger->set_level(spdlog::level::trace);
     spdlog::register_logger(g_logger);
-    g_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n] [%s:%#] [%^%l%$] %v");
+
+    // 创建自定义格式化器
+    auto formatter = std::make_unique<spdlog::pattern_formatter>();
+    formatter->add_flag<spdlog::custom_formatters::cached_pid_formatter>('p');
+    formatter->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n:%p:%t] [%s:%#] [%^%l%$] %v");
+    g_logger->set_formatter(std::move(formatter));
+    // g_logger->set_pattern("[%Y-%m-%d %H:%M:%S.%e] [%n:%P:%t] [%s:%#] [%^%l%$] %v");
     g_isInit.store(true, std::memory_order_relaxed);
 }
 
