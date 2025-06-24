@@ -39,3 +39,18 @@ toml解析库c++版本，用来替代json，可以携带注释，结构更简单
 google开发的一套高性能工具集，高性能内存分配器tcmalloc/cpu性能分析工具/heap内存分析工具/内存泄漏检测工具/缓存使用分析工具，根据不同选项 --heap-checker/cpu-profiler/heap-profiler/
 版本：2.16.90
 依赖：libunwind
+
+## abseil-cpp
+Abseil 是由 Google 开发的开源 C++ 库集合，旨在为开发者提供高效、可靠且可移植的基础工具。它的名称来源于 “Abstract” 的缩写，寓意其提供抽象化的核心功能，帮助开发者避免重复造轮子，有基础工具/时间与数学/并发控制/调试与测试
+版本：20250127.0，protofbuf 30.2依赖此版本
+依赖：NA
+
+## protobuf
+Protocol Buffers 是 Google 开发的一种语言无关、平台无关的序列化数据结构的方法，常用于通信协议、数据存储等场景。
+版本：20250127.0，protofbuf 30.2依赖此版本
+依赖：abseil-cpp 20250127.0
+
+## fdbus
+轻量级的soa通信中间件，与vsomeip类似，可以与tool中fdbus_tool进行配合生成接口代码，其中的序列化方案依赖protobuf，但是编译无依赖
+版本：无版本
+依赖：NA

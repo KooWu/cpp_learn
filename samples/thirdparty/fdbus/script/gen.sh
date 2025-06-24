@@ -1,0 +1,1 @@
+/home/yaoxingwei0382/my/cpp_learn/install/x86_sysroot/release/bin/protoc --proto_path=../proto/ test.proto --cpp_out=../proto/

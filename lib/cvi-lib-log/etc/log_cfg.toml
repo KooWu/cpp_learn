@@ -3,7 +3,7 @@
 fileName = "/tmp/tbox.log"
 fileSize = 102400000
 fileNum = 3
-level = "err"
+level = "warn"
 
 # 第一个应用配置
 [[apps]]

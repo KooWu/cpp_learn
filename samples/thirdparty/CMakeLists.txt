@@ -65,3 +65,40 @@ target_link_libraries(libunwind_test PRIVATE ${CVI_PRJ_PATH}/install/${CVI_BUILD
 target_link_libraries(libunwind_test PRIVATE ${CVI_PRJ_PATH}/install/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/lib/libunwind-x86_64.so)
 
 install(TARGETS tomlplusplus_test spdlog_test googletest_test benchmark_test nameof_test jemalloc_test gperftools_test libunwind_test RUNTIME DESTINATION bin/samples/thirdparty)
+
+find_package(protobuf REQUIRED)
+add_compile_definitions(CONFIG_PROTOBUF_4_0_X)
+add_executable(
+    fdbus_client
+    fdbus/client.cpp
+    fdbus/proto/test.pb.cc
+    fdbus/proto/test.pb.h
+)
+target_include_directories(
+  fdbus_client PRIVATE ${CVI_PRJ_PATH}/install/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/usr/include/
+)
+target_include_directories(
+  fdbus_client PRIVATE fdbus/proto
+)
+
+target_link_libraries(fdbus_client PRIVATE protobuf::libprotobuf)
+target_link_libraries(fdbus_client PRIVATE ${CVI_PRJ_PATH}/install/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/usr/lib/libfdbus.so)
+
+add_executable(
+  fdbus_server
+  fdbus/server.cpp
+  fdbus/proto/test.pb.cc
+  fdbus/proto/test.pb.h
+)
+
+target_include_directories(
+  fdbus_server PRIVATE ${CVI_PRJ_PATH}/install/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/usr/include/
+)
+target_include_directories(
+  fdbus_server PRIVATE fdbus/proto
+)
+
+target_link_libraries(fdbus_server PRIVATE protobuf::libprotobuf)
+target_link_libraries(fdbus_server PRIVATE ${CVI_PRJ_PATH}/install/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/usr/lib/libfdbus.so)
+
+install(TARGETS fdbus_server fdbus_client RUNTIME DESTINATION bin/samples/thirdparty)
