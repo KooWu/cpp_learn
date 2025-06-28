@@ -105,8 +105,11 @@ extern "C" void log_output(enum level_enum level, const char *file, int line, co
             // 添加截断标识（需确保缓冲区足够）
             constexpr const char* trunc_mark = "...[TRUNCATED]";
             const size_t mark_len = strlen(trunc_mark);
-            if (max_log_length > mark_len + 1) {
-                strncpy(buffer + max_log_length - mark_len - 1, trunc_mark, mark_len);
+            if (max_log_length > mark_len) {
+                // 使用snprintf自动处理结束符
+                snprintf(buffer + max_log_length - mark_len - 1, mark_len + 1, "%s", trunc_mark);
+            } else if (max_log_length > 0) {
+                // 空间不足时，至少保留结束符
                 buffer[max_log_length - 1] = '\0';
             }
         }

@@ -3,21 +3,15 @@
 
 echo "$0 file is running"
 
-echo "BUILD_MODULE_DIR: ${BUILD_MODULE_DIR}"
-echo "BUILD_TYPE: ${BUILD_TYPE}"
-echo "BUILD_INSTALL_DIR: ${BUILD_INSTALL_DIR}"
-echo "PLATFORM_TYPE: ${PLATFORM_TYPE}"
-echo "PLATFORM_TYPE: ${CC}"
-
-cd ${BUILD_MODULE_DIR}
-if [ ${PLATFORM_TYPE} = ubuntu ]; then
-./Configure  linux-x86_64 no-asm shared no-async --prefix=${BUILD_INSTALL_DIR}
+cd ${CVI_BUILD_MODULE}
+if [ ${CVI_BUILD_PLATFORM} = x86 ]; then
+./Configure  linux-x86_64 no-asm shared no-async --prefix=${CVI_INSTALL_PREFIX}
 else
-./Configure  linux-aarch64 no-asm shared no-async --prefix=${BUILD_INSTALL_DIR}
+./Configure  CFLAGS="$CFLAGS -S" $CONFIGURE_FLAGS linux-aarch64 no-asm shared no-async --prefix=${CVI_INSTALL_PREFIX}
 fi
 
 make clean
-make -j ${CORE_NUM}
+make -j 8
 make install
 
 echo "$0 file is exit"

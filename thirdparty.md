@@ -54,3 +54,14 @@ Protocol Buffers 是 Google 开发的一种语言无关、平台无关的序列�
 轻量级的soa通信中间件，与vsomeip类似，可以与tool中fdbus_tool进行配合生成接口代码，其中的序列化方案依赖protobuf，但是编译无依赖
 版本：无版本
 依赖：NA
+
+## openssl
+OpenSSL 是一个开源的加密库，提供了安全套接字层（SSL）和传输层安全（TLS）协议的实现，同时包含了大量密码学相关的功能，广泛应用于网络安全通信、数据加密、数字签名等场景。
+需要高性能的，可以选择WolfSSL，支持多种平台和处理器架构。
+版本：1.1.1k
+依赖：无版本
+
+## mosquitto
+Mosquitto 是一个开源的消息代理软件，主要用于实现基于 MQTT（Message Queuing Telemetry Transport） 协议的消息通信。它由 Eclipse Foundation 维护，具有轻量级、低功耗、占用资源少等特点，非常适合物联网（IoT）设备、嵌入式系统以及需要在低带宽或不稳定网络环境下工作的场景。
+版本：2.0.21
+依赖：openssl（自动检测有安全库，则打开安全功能）
