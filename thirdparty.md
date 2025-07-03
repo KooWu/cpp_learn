@@ -65,3 +65,28 @@ OpenSSL 是一个开源的加密库，提供了安全套接字层（SSL）和传
 Mosquitto 是一个开源的消息代理软件，主要用于实现基于 MQTT（Message Queuing Telemetry Transport） 协议的消息通信。它由 Eclipse Foundation 维护，具有轻量级、低功耗、占用资源少等特点，非常适合物联网（IoT）设备、嵌入式系统以及需要在低带宽或不稳定网络环境下工作的场景。
 版本：2.0.21
 依赖：openssl（自动检测有安全库，则打开安全功能）
+
+## boost
+Boost 库是一个开源的 C++ 程序库集合，由 C++ 标准委员会前成员发起，旨在为 C++ 开发者提供高效、可靠且可移植的组件。它不仅补充了 C++ 标准库的功能，还包含了许多前沿技术实现，被广泛应用于系统开发、网络编程、数值计算等领域。下载链接https://www.boost.org/releases/latest/
+版本：1.80
+依赖：无
+
+## dlt-daemon
+DLT（Diagnostic Log and Trace）是一种专为汽车电子系统设计的标准化日志协议，由 AUTOSAR（汽车开放系统架构）组织开发。DLT-Daemon 是 DLT 协议的核心实现，负责收集、处理和分发车辆各 ECU（电子控制单元）产生的日志数据
+版本：2.18.10
+依赖：无
+
+## vsomeip
+一种轻量级的通信中间件，主要用于汽车电子领域的服务通信，基于 IP 协议实现跨进程、跨主机的对象通信。
+版本：3.5.6
+依赖：boost（1.80，1.88不可用）dlt-daemon(可选)
+
+## CAPICXX
+CAPICXX（Common API C++）是用于汽车电子的 C++ 中间件框架，提供跨进程通信（IPC）能力，支持多种传输协议。它由两部分核心组件构成：
+
+CAPICXX-CORE-RUNTIME：提供基础通信抽象层和接口定义语言（IDL）编译工具
+CAPICXX-SOMEIP-RUNTIME：基于 SOME/IP（Scalable service-Oriented MiddlewarE over IP）协议的具体实现
+
+两者关系：Core 是基础框架，SOMEIP 是基于 Core 的传输层实现。
+版本：3.2.4
+依赖：无

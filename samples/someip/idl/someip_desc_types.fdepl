@@ -1,0 +1,27 @@
+
+import "platform:/plugin/org.genivi.commonapi.someip/deployment/CommonAPI-4-SOMEIP_deployment_spec.fdepl"
+import "someip_desc_types.fidl"
+
+define org.genivi.commonapi.someip.deployment for typeCollection soa.sample.CustomTypes as DeployedTypes {
+
+struct PlusParamInfo {
+
+    x {
+    }
+
+    y {
+    }
+
+}
+
+struct TimeInfo {
+
+    timestamp {
+    }
+
+    seq {
+    }
+
+}
+
+}

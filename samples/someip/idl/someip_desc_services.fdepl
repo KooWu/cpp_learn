@@ -1,0 +1,39 @@
+import "platform:/plugin/org.genivi.commonapi.someip/deployment/CommonAPI-4-SOMEIP_deployment_spec.fdepl"
+import "someip_desc_types.fdepl"
+import "someip_desc_services.fidl"
+
+define org.genivi.commonapi.someip.deployment for interface soa.sample.TestSrvIf {
+
+    SomeIpServiceID = 0x0382
+
+    method PlusMtd {
+        SomeIpMethodID = 0x00A1
+        SomeIpReliable = true
+    }
+
+    method HelloMtd {
+        SomeIpMethodID = 0x00A2
+        SomeIpReliable = true
+    }
+
+    attribute StatusFld {
+        SomeIpGetterID = 0x00A4
+        SomeIpSetterID = 0x00A3
+        SomeIpNotifierID = 0x8001
+        SomeIpNotifierEventGroups = { 0x0001 }
+    }
+
+    broadcast TimeEvt {
+        SomeIpEventID = 0x8002
+        SomeIpEventGroups = { 0x0002 }
+    }
+
+}
+
+
+define org.genivi.commonapi.someip.deployment for provider as server_app {
+    instance soa.sample.TestSrvIf {
+        InstanceId = "TestSrvIf.server_app"
+        SomeIpInstanceID = 0x01
+    }
+}

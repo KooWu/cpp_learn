@@ -1,0 +1,8 @@
+{
+    "soa.sample.TestSrvIf" : {
+        "service_id": 898,
+        "instances" : {
+            "TestSrvIf.server_app": 1
+        }
+    }
+}

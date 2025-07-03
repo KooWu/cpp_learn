@@ -3,21 +3,17 @@
 
 echo "$0 file is running"
 
-echo "BUILD_MODULE_DIR: ${BUILD_MODULE_DIR}"
-echo "BUILD_TYPE: ${BUILD_TYPE}"
-echo "BUILD_INSTALL_DIR: ${BUILD_INSTALL_DIR}"
-echo "PLATFORM_TYPE: ${PLATFORM_TYPE}"
-
-cd ${BUILD_MODULE_DIR}
+echo "CVI_BUILD_MODULE: ${CVI_BUILD_MODULE}"
+cd ${CVI_BUILD_MODULE}
 rm -rf bin.v2
-if [ ! -e "${BUILD_MODULE_DIR}/b2" ];then
-    echo "bootstrap.sh will run, ubuntu will done"
+if [ ! -e "b2" ];then
+    echo "bootstrap.sh will run, x86 will done"
     ./bootstrap.sh
 fi
   
-cp project-config-${PLATFORM_TYPE}.jam project-config.jam
+cp project-config-${CVI_BUILD_PLATFORM}.jam project-config.jam
 ./b2 clean
 
-./b2 install --with-system --with-thread --with-filesystem --prefix=${BUILD_INSTALL_DIR}
+./b2 install --with-system --with-thread --with-filesystem --prefix=${CVI_INSTALL_PREFIX}
 
 echo "$0 file is exit"

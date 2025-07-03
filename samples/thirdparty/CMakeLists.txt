@@ -102,3 +102,11 @@ target_link_libraries(fdbus_server PRIVATE protobuf::libprotobuf)
 target_link_libraries(fdbus_server PRIVATE ${CVI_PRJ_PATH}/install/${CVI_BUILD_PLATFORM}_sysroot/${CVI_BUILD_TYPE}/usr/lib/libfdbus.so)
 
 install(TARGETS fdbus_server fdbus_client RUNTIME DESTINATION bin/samples/thirdparty)
+
+find_package(Boost COMPONENTS system thread filesystem REQUIRED )
+
+add_executable(
+  boost_test
+  boost_test.cpp
+)
+target_link_libraries(boost_test PRIVATE  ${Boost_LIBRARIES})

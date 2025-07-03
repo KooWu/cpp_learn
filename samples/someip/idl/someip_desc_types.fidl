@@ -1,0 +1,15 @@
+package soa.sample
+
+typeCollection CustomTypes {
+
+struct PlusParamInfo {
+    Int16 x
+    Int16 y
+}
+
+struct TimeInfo {
+    Int64 timestamp
+    Int64 seq
+}
+
+}

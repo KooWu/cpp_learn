@@ -1,0 +1,33 @@
+package soa.sample
+
+import soa.sample.CustomTypes.* from "someip_desc_types.fidl"
+
+interface TestSrvIf {
+
+    version {major 1 minor 0}
+
+    method PlusMtd {
+        in {
+            PlusParamInfo inData 
+        }
+        out {
+            Int32 outData 
+        }
+    }
+
+    method HelloMtd fireAndForget {
+        in {
+            String inData 
+        }
+    }
+
+    attribute Int8 StatusFld
+
+    broadcast TimeEvt {
+        out {
+            TimeInfo data 
+        }
+    }
+
+}
+
