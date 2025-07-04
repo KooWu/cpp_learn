@@ -10,3 +10,4 @@ install
 thirdparty/*
 tool/commonapi_core_gen/*
 tool/commonapi_someip_gen/*
+samples/mqtt/script/cert/*
