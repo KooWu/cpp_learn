@@ -110,3 +110,4 @@ add_executable(
   boost_test.cpp
 )
 target_link_libraries(boost_test PRIVATE  ${Boost_LIBRARIES})
+install(TARGETS boost_test RUNTIME DESTINATION bin/samples/thirdparty)
