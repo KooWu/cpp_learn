@@ -4,14 +4,21 @@
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 #include <openssl/err.h>
+#include <iostream>
 
 // 生成RSA密钥对
 int generate_rsa_key(const char *private_key_file, const char *public_key_file) {
-    RSA *rsa = RSA_generate_key(2048, RSA_F4, NULL, NULL);
-    if (!rsa) {
-        ERR_print_errors_fp(stderr);
-        return 0;
-    }
+    // RSA *rsa = RSA_generate_key(2048, RSA_F4, NULL, NULL);
+    // if (!rsa) {
+    //     ERR_print_errors_fp(stderr);
+    //     return 0;
+    // }
+
+    RSA *rsa = RSA_new();
+    BIGNUM *e = BN_new();
+    BN_set_word(e, RSA_F4);  // 设置公钥指数为65537（RSA_F4的定义）
+    RSA_generate_key_ex(rsa, 2048, e, NULL);
+    BN_free(e);  // 记得释放BIGNUM对象
 
     // 保存私钥到文件
     FILE *fp = fopen(private_key_file, "wb");
@@ -99,6 +106,7 @@ int main() {
         fprintf(stderr, "签名失败\n");
         return 1;
     }
+    std::cout << "signature_len: " << signature_len << std::endl;
 
     // 验签
     int verify_result = rsa_verify(message, message_len, signature, signature_len, public_key_file);

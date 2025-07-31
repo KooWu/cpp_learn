@@ -24,3 +24,6 @@
 # 如何生成文档
 ./build.sh -m . -t docs
 
+# 执行时环境变量
+export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:../../../lib
+

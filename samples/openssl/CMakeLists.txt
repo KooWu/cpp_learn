@@ -25,3 +25,28 @@ add_executable(
 # target_include_directories(sign_test PRIVATE ${OpenSSL_INCLUDE_DIR})
 target_link_libraries(encrypt_test PRIVATE  OpenSSL::Crypto OpenSSL::SSL)
 install(TARGETS encrypt_test RUNTIME DESTINATION bin/samples/openssl)
+
+
+add_executable(
+  asymmetric_encrypt_test
+  asymmetric_encrypt_test.cpp
+)
+# target_include_directories(sign_test PRIVATE ${OpenSSL_INCLUDE_DIR})
+target_link_libraries(asymmetric_encrypt_test PRIVATE  OpenSSL::Crypto OpenSSL::SSL)
+install(TARGETS asymmetric_encrypt_test RUNTIME DESTINATION bin/samples/openssl)
+
+add_executable(
+  cert_hld
+  cert_hld.cpp
+)
+# target_include_directories(sign_test PRIVATE ${OpenSSL_INCLUDE_DIR})
+target_link_libraries(cert_hld PRIVATE  OpenSSL::Crypto OpenSSL::SSL)
+install(TARGETS cert_hld RUNTIME DESTINATION bin/samples/openssl)
+
+add_executable(
+  https_cm
+  https_cm.cpp
+)
+# target_include_directories(sign_test PRIVATE ${OpenSSL_INCLUDE_DIR})
+target_link_libraries(https_cm PRIVATE  OpenSSL::Crypto OpenSSL::SSL)
+install(TARGETS https_cm RUNTIME DESTINATION bin/samples/openssl)
