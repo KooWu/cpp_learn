@@ -90,3 +90,8 @@ CAPICXX-SOMEIP-RUNTIME：基于 SOME/IP（Scalable service-Oriented MiddlewarE o
 两者关系：Core 是基础框架，SOMEIP 是基于 Core 的传输层实现。
 版本：3.2.4
 依赖：无
+
+## sqlite
+SQLite 是一款轻量级的嵌入式关系型数据库，以其零配置、无需独立服务器、跨平台和高效性而广泛应用于各类场景（如移动应用、嵌入式设备、桌面软件等）
+版本：3.50.4
+依赖：无
