@@ -4,6 +4,8 @@
 
 # 目录说明
 
+## cmake
+    代码检查/文档生成/交叉编译等cmake配置
 ## script
     编译脚本依赖目录
 ## samples
@@ -18,4 +20,7 @@
     自研库目录
 ## tool
     工具仓
+
+# 如何生成文档
+./build.sh -m . -t docs
 

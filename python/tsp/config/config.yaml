@@ -1,0 +1,25 @@
+mqtt:
+  broker: "10.10.24.37" # localhost for local testing, 10.10.24.37 for remote testing
+  port: 8883 # 8883 for local testing, 11606 for remote testing
+  is_anonymous: true
+  username: ""
+  password: ""
+  need_auth: true # set to true when using tsl/ssl
+  ca_cert: "/home/yaoxingwei0382/my/cpp_learn/samples/mqtt/script/cert/rootMqttCA.crt"
+  client_cert: "/home/yaoxingwei0382/my/cpp_learn/samples/mqtt/script/cert/mqtt_client.crt"
+  client_key: "/home/yaoxingwei0382/my/cpp_learn/samples/mqtt/script/cert/mqtt_client.key"
+  topics:
+    - "vehicle_status"
+    - "vehicle_data"
+    - "vehicle_alert"
+
+logging:
+  level: "INFO"
+  file: "logs/vehicle_monitor.log"
+
+vehicle_whitelist:
+    enabled: true
+    vehicles:
+    - "00000000000000001"
+    - "00000000000000002"
+    - "00000000000000003"
