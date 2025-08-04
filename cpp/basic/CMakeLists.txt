@@ -123,4 +123,9 @@ add_executable(
     smart_pointer.cpp
 )
 
-install(TARGETS nullptr auto uniform_init explicit default_delete alias noexcept override_final decltype lambda refer move_func tuple functional assert using macro_test operator exception file_stream file_op time_op type_cast smart_pointer RUNTIME DESTINATION bin/cpp/basic)
+add_executable(
+    regex_test
+    regex.cpp
+)
+
+install(TARGETS regex_test nullptr auto uniform_init explicit default_delete alias noexcept override_final decltype lambda refer move_func tuple functional assert using macro_test operator exception file_stream file_op time_op type_cast smart_pointer RUNTIME DESTINATION bin/cpp/basic)
